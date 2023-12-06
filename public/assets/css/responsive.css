@@ -1,0 +1,14 @@
+@media (min-width: 320px) and (max-width: 991px) {
+    .login-hero{
+            background: none;
+    }
+    .register-hero{
+        background: none;
+}
+}
+@media (max-width: 320px) {
+    .login-desc p {
+        font-size: 24px;
+        padding-top: 50px;
+    }
+}

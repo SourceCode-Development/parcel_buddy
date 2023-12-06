@@ -1,0 +1,20 @@
+{
+    "name": "mahz-lathiya/phpmvc-framework",
+    "authors": [
+        {
+            "name": "Ahzam Lathiya",
+            "email": "mahzlathiya@gmail.com"
+        }
+    ],
+    "autoload": {
+        "psr-4": {
+            "app\\": "."
+        },
+        "files": [
+            "./helpers/basic_helpers.php"
+        ]
+    },
+    "require": {
+        "vlucas/phpdotenv": "^5.0"
+    }
+}
