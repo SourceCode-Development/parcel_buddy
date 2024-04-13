@@ -2,8 +2,7 @@
 
 namespace app\core;
 
-class Model
-{
+class Model{
     const RULE_REQUIRED = 'required';
     const RULE_EMAIL = 'email';
     const RULE_MIN = 'min';

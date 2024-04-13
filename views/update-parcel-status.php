@@ -3,8 +3,15 @@
 use app\core\form\Form;
 
 ?>
+<?php
+if($is_admin){
+  echo '<h1>Edit parcel</h1>';
+}
 
-<h1>Edit parcel</h1>
+else{
+  echo '<h1>Update parcel status</h1>';
+}
+?>
 
 <!-- <form action="/update_parcel" method="post">
     <div class="form-group">
@@ -61,8 +68,11 @@ use app\core\form\Form;
     <button class="btn btn-success">Submit</button>
 </form> -->
 
-<?php $form = Form::begin('/update_parcel', 'post') ?>
+<?php $form = Form::begin('/update-parcel-status', 'post') ?>
     <?php echo $form->hiddenField($model, 'id')->hiddenField() ?>
+    <?php 
+      if($is_admin):
+    ?>
     <div class="row">
         <div class="col">
             <?php echo $form->field($model, 'recipient_name') ?>
@@ -74,10 +84,27 @@ use app\core\form\Form;
     <?php echo $form->field($model, 'latitude') ?>
     <?php echo $form->field($model, 'postcode') ?>
     <?php echo $form->selector($model, 'assigned_to', $riders) ?>
-    <?php echo $form->selector($model, 'status', [
+
+    <?php
+      endif;
+    ?>
+
+    <?php 
+    if($is_admin){
+      echo $form->selector($model, 'status', [
         ['value' => 1, 'title' => 'In Process'],
         ['value' => 2, 'title' => 'Delivered'],
         ['value' => 3, 'title' => 'Canceled'],
-    ]) ?>
+      ]);
+    }
+
+    else{
+      echo $form->selector($model, 'status', [
+        ['value' => 2, 'title' => 'Delivered'],
+        ['value' => 3, 'title' => 'Canceled'],
+      ]);
+    }
+     ?>
+
     <button class="btn btn-primary btn-lg w-100">Submit</button>
 <?php Form::end() ?>

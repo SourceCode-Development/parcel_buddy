@@ -68,14 +68,18 @@ class Parcel extends DbModel
         $statement = Application::$app->db->prepare("SELECT p.id, p.recipient_name, p.delivery_address, p.latitude, p.longitude,p.postcode,ps.status_title , u.name FROM parcels p inner join users u on p.assigned_to = u.id inner join parcel_status ps on p.status = ps.status_id limit :lim offset :offs ");
         $statement->bindValue(':lim', $limit, \PDO::PARAM_INT);
         $statement->bindValue(':offs', $offset, \PDO::PARAM_INT);
+
         $statement->execute();
 
         return $statement->fetchAll(\PDO::FETCH_ASSOC);
     }
 
-    public static function get_parcel_for_user($user_id){
-        $statement = Application::$app->db->prepare("SELECT p.id, p.recipient_name, p.delivery_address, p.latitude, p.longitude,p.postcode,ps.status_title , u.name FROM parcels p inner join users u on p.assigned_to = u.id inner join parcel_status ps on p.status = ps.status_id where u.id = :user_id");
+    public static function get_parcel_for_user($user_id, $limit = 5, $offset = 0){
+        $statement = Application::$app->db->prepare("SELECT p.id, p.recipient_name, p.delivery_address, p.latitude, p.longitude,p.postcode,ps.status_title , u.name FROM parcels p inner join users u on p.assigned_to = u.id inner join parcel_status ps on p.status = ps.status_id where u.id = :user_id limit :lim offset :offs ");
         $statement->bindValue(':user_id', $user_id);
+        $statement->bindValue(':lim', $limit, \PDO::PARAM_INT);
+        $statement->bindValue(':offs', $offset, \PDO::PARAM_INT);
+
         $statement->execute();
 
         return $statement->fetchAll(\PDO::FETCH_ASSOC);
@@ -119,5 +123,14 @@ class Parcel extends DbModel
             return false;
         }
         return true;
+    }
+
+    public static function get_parcel($parcel_id){
+        $statement = Application::$app->db->prepare("SELECT p.id, p.recipient_name, p.delivery_address, p.latitude, p.longitude, p.postcode, p.assigned_to, ps.status_title FROM parcels p inner join parcel_status ps on p.status = ps.status_id where p.id = :parcel_id;");
+        $statement->bindValue(':parcel_id', $parcel_id);
+
+        $statement->execute();
+
+        return $statement->fetchAll(\PDO::FETCH_ASSOC);
     }
 }

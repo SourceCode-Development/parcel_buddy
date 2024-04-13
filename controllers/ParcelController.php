@@ -25,7 +25,9 @@ class ParcelController extends Controller
             'add_parcel', 
             'create_parcel', 
             'edit_parcel', 
-            'update_parcel'
+            'update_parcel',
+            'change_status',
+            'update_parcel_status',
         ]));
 
         $this->registerMiddleware(new AdminMiddleware([
@@ -77,10 +79,10 @@ class ParcelController extends Controller
 
         else{
             $user_id = Application::$app->user->id;
-            $all_parcels = Parcel::get_parcel_for_user($user_id);
+            $all_parcels = Parcel::get_parcel_for_user($user_id, self::PARCEL_DISPLAY_LIMIT, $offset);
         }
 
-        $send_data = \compact('all_parcels', 'is_admin');
+        $send_data = \compact('all_parcels');
         return \json_encode($send_data);
     }
 
@@ -89,6 +91,33 @@ class ParcelController extends Controller
         $riders = User::findMany(['role_id' => 2]);
         $send_data = \compact('riders', 'title');
         return $this->render('add_parcel', $send_data);
+    }
+
+    public function change_status(Request $request){
+        $title = 'Update parcel status';
+
+        $params = $request->getRouteParams();
+
+        if(empty($params) || empty($params['parcel_id'])){
+            throw new NotFoundException();
+        }
+
+        $is_admin = false;
+        if(Application::$app->user->role_id == 1){
+            $is_admin = true;
+        }
+
+        $parcel_id = $params['parcel_id'];
+
+        $parcel = Parcel::findOne(['id' => $parcel_id]);
+        if(empty($parcel)){
+            throw new NotFoundException('Parcel Does not exist');
+        }
+        $model = new Parcel();
+        $model->loadData($parcel);
+
+        $send_data = \compact('title', 'model', 'is_admin');
+        return $this->render('update-parcel-status', $send_data);
     }
 
     public function create_parcel(Request $request){
@@ -117,6 +146,11 @@ class ParcelController extends Controller
         $title = 'Update parcel';
         $params = $request->getRouteParams();
 
+        $is_admin = false;
+        if(Application::$app->user->role_id == 1){
+            $is_admin = true;
+        }
+
         if(empty($params) || empty($params['id'])){
             throw new NotFoundException();
         }
@@ -135,7 +169,7 @@ class ParcelController extends Controller
             $rider['value'] = $rider['id'];
             $rider['title'] = $rider['name'];
         }
-        $send_data = \compact('riders', 'parcel', 'model', 'title');
+        $send_data = \compact('riders', 'parcel', 'model', 'title', 'is_admin');
 
         return $this->render('edit_parcel', $send_data);
     }
@@ -147,6 +181,51 @@ class ParcelController extends Controller
             $parcel->loadData($body);
             if ($parcel->validate() && $parcel->update()) {
                 Application::$app->session->setFlash('success', 'Parcel Updated Successfully');
+                Application::$app->response->redirect('/parcels');
+                return 'Show success page';
+            }
+        }
+
+        $riders = User::findMany(['role_id' => 2]);
+        $model = $parcel;
+        foreach($riders as &$rider){
+            $rider['value'] = $rider['id'];
+            $rider['title'] = $rider['name'];
+        }
+        $title = 'Edit parcel';
+        $send_data = \compact('riders', 'parcel', 'model', 'title');
+
+        $this->setLayout('auth');
+        return $this->render('edit_parcel', $send_data);
+    }
+
+    public function update_parcel_status(Request $request){
+        $body = $request->getBody();
+
+        if(empty($body['id'])){
+            Application::$app->session->setFlash('success', 'No parcel id specified');
+            return Application::$app->response->redirect('/parcels');
+        }
+
+        $parcel_data = Parcel::get_parcel($body['id']);
+        if(empty($parcel_data)){
+            Application::$app->session->setFlash('success', 'Parcel does not exist');
+            return Application::$app->response->redirect('/parcels');
+        }
+
+        $body['id'] = $parcel_data[0]['id'];
+        $body['recipient_name'] = $parcel_data[0]['recipient_name'];
+        $body['delivery_address'] = $parcel_data[0]['delivery_address'];
+        $body['latitude'] = $parcel_data[0]['latitude'];
+        $body['longitude'] = $parcel_data[0]['longitude'];
+        $body['postcode'] = $parcel_data[0]['postcode'];
+        $body['assigned_to'] = $parcel_data[0]['assigned_to'];
+
+        if ($request->getMethod() === 'post') {
+            $parcel = new Parcel();
+            $parcel->loadData($body);
+            if ($parcel->validate() && $parcel->update()) {
+                Application::$app->session->setFlash('success', 'Parcel status updated successfully');
                 Application::$app->response->redirect('/parcels');
                 return 'Show success page';
             }
