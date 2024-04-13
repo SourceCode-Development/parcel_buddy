@@ -16,7 +16,7 @@ class AdminMiddleware extends BaseMiddleware
 
     public function execute()
     {
-        if ( Application::$app->user->role_id == 2 ) {
+        if ( Application::$app->user->role_id != 1 ) {
             if(!empty($this->actions) && in_array(Application::$app->controller->action, $this->actions) ){
                 throw new ForbiddenException();
             }

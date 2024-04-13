@@ -1,7 +1,7 @@
       <div class="footer">
         <div class="copyright">
           <p>
-            © Copyright 2023 - 2024 Parcel Buddy. All rights reserved
+            © Copyright <?php echo \date('Y'); ?> Parcel Buddy. All rights reserved
           </p>
         </div>
       </div>

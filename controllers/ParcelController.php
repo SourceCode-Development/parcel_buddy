@@ -11,13 +11,17 @@ use app\core\Response;
 use app\models\LoginForm;
 use app\models\{User, Parcel};
 use app\core\exception\NotFoundException;
+use ErrorException;
 
 class ParcelController extends Controller
 {
+    public const PARCEL_DISPLAY_LIMIT = 5;
+
     public function __construct()
     {
         $this->registerMiddleware(new AuthMiddleware([
             'index', 
+            'parcels_paginated',
             'add_parcel', 
             'create_parcel', 
             'edit_parcel', 
@@ -51,6 +55,35 @@ class ParcelController extends Controller
         return $this->render('parcels', $send_data);
     }
 
+    public function parcels_paginated(Request $request){
+        $params = $request->getRouteParams();
+
+        $page = 1;
+        if(!empty($params['page'])){
+            $page = $params['page'];
+        }
+
+        $offset = self::PARCEL_DISPLAY_LIMIT * ($page - 1);
+
+        if($offset < 0){
+            $offset = 0;
+        }
+
+        $is_admin = false;
+        if(Application::$app->user->role_id == 1){
+            $all_parcels = Parcel::get_parcels(self::PARCEL_DISPLAY_LIMIT, $offset);
+            $is_admin = true;
+        }
+
+        else{
+            $user_id = Application::$app->user->id;
+            $all_parcels = Parcel::get_parcel_for_user($user_id);
+        }
+
+        $send_data = \compact('all_parcels', 'is_admin');
+        return \json_encode($send_data);
+    }
+
     public function add_parcel(){
         $title = 'Add parcel';
         $riders = User::findMany(['role_id' => 2]);
@@ -75,7 +108,8 @@ class ParcelController extends Controller
             ]);
         }
         catch(\Throwable $e){
-            \var_dump($e);
+            // \var_dump($e);
+            throw new ErrorException($e->getMessage());
         }
     }
 

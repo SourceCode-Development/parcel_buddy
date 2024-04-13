@@ -32,6 +32,7 @@ $app->router->get('/contact', [SiteController::class, 'contact']);
 $app->router->get('/about', [AboutController::class, 'index']);
 
 $app->router->get('/parcels', [ParcelController::class, 'index']);
+$app->router->get('/parcels-paginated/{page}', [ParcelController::class, 'parcels_paginated']);
 $app->router->get('/add_parcel', [ParcelController::class, 'add_parcel']);
 $app->router->post('/create_parcel', [ParcelController::class, 'create_parcel']);
 $app->router->post('/update_parcel', [ParcelController::class, 'update_parcel']);
