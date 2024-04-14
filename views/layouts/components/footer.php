@@ -43,5 +43,25 @@
     <script src="../../../assets/vendor/jquery.counterup/jquery.counterup.min.js"></script>
 
     <script src="../../../assets/js/dashboard/dashboard-1.js"></script>
+
+    <script>
+        function traverse_upward(current, target_tag, target_class_name=null){
+          let new_tag = current;
+
+          if(target_class_name == null || target_class_name.trim() == ''){
+            while(new_tag.tagName != target_tag){
+              new_tag = new_tag.parentElement;
+            }
+
+            return new_tag;
+          }
+
+          while(new_tag.tagName != target_tag || !new_tag.classList.contains(target_class_name)){
+              new_tag = new_tag.parentElement;
+          }
+
+          return new_tag;
+        }
+    </script>
   </body>
 </html>

@@ -54,11 +54,11 @@ $this->title = 'Parcels';
       if($count >= 5){
         break;
       }
-      echo '<tr>';
+      echo '<tr class="custom-row" onClick="focusOnMarker()">';
       echo "<td>" . $parcel['id'] .  "</td>";
       echo "<td>" . $parcel['recipient_name'] .  "</td>";
       echo "<td>" . $parcel['delivery_address'] .  "</td>";
-      echo "<td>" . '{' . $parcel['latitude'] . ' ,' . $parcel['longitude'] . '}' . "</td>";
+      echo "<td class='coordinates-cell'>" . '{' . $parcel['latitude'] . ' ,' . $parcel['longitude'] . '}' . "</td>";
       echo "<td>" . $parcel['name'] .  "</td>";
       echo "<td>" . $parcel['status_title'] .  "</td>";
       if($is_admin){
@@ -91,6 +91,8 @@ $this->title = 'Parcels';
   const is_admin = <?php echo \json_encode($is_admin); ?>;
   let center_lat;
   let center_long;
+  let map;
+  let centering_delay_flag = true;
 
   window.addEventListener('load', function(){
     navigator.geolocation.getCurrentPosition((position) => {
@@ -117,7 +119,7 @@ $this->title = 'Parcels';
         "marker",
       );
 
-      const map = new Map(document.getElementById("map"), {
+      map = new Map(document.getElementById("map"), {
         zoom: 12,
         center: { lat: initial_coordinates.latitude, lng: initial_coordinates.longitude },
         mapId: "4504f8b37365c3d0",
@@ -188,6 +190,32 @@ async function open_paginated(){
   initMap({'latitude': center_lat, 'longitude': center_long});
 }
 
+function focusOnMarker(){
+  if(!centering_delay_flag){
+    return;
+  }
+
+  let current = event.target;
+  selected_row = traverse_upward(current, 'TR', 'custom-row');
+  let coordinate_string = selected_row.querySelector('.coordinates-cell').textContent;
+
+  coordinate_string = coordinate_string.replaceAll('{', '');
+  coordinate_string = coordinate_string.replaceAll('}', '');
+
+  let coordinate_string_splitted = coordinate_string.split(',');
+
+  let latitude = coordinate_string_splitted[0]?.trim();
+  let longitude = coordinate_string_splitted[1]?.trim();
+
+  map.setCenter({lat: parseFloat(latitude), lng: parseFloat(longitude)});
+  centering_delay_flag = false;
+
+  //enable the flag after 1 second of being rendered, so that user cannot keep on sending requests unnecessarily
+  setTimeout(() => {
+    centering_delay_flag = true;
+  }, 1000);
+}
+
 function render_rows(data){
   let table = document.querySelector('.table');
   let tbody = table.querySelector('tbody');
@@ -195,11 +223,11 @@ function render_rows(data){
   let template = ``;
 
   for(let row of data){
-      template = template + '<tr>';
+      template = template + '<tr class="custom-row" onClick="focusOnMarker()">';
       template = template + "<td>" + row['id'] +  "</td>";
       template = template + "<td>" + row['recipient_name'] +  "</td>";
       template = template + "<td>" + row['delivery_address'] +  "</td>";
-      template = template + "<td>" +'{' + row['latitude'] + ' ,' + row['longitude'] + '}' + "</td>";
+      template = template + "<td class='coordinates-cell'>" +'{' + row['latitude'] + ' ,' + row['longitude'] + '}' + "</td>";
       template = template + "<td>" + row['name'] +  "</td>";
       template = template + "<td>" + row['status_title'] +  "</td>";
       
