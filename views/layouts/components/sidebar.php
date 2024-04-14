@@ -12,7 +12,7 @@ use app\core\Application;
         </a>
       </li>
 
-      <?php if(Application::$app->user->role_id == 1): ?>
+      <?php if( !empty(Application::$app->user) && (Application::$app->user->role_id == 1) ): ?>
       <li>
         <a href="/parcels" aria-expanded="false">
           <i class="icon icon-app-store"></i>
@@ -20,7 +20,7 @@ use app\core\Application;
         </a>
       </li>
 
-      <?php elseif(Application::$app->user->role_id == 2): ?>
+      <?php elseif( !empty(Application::$app->user) && (Application::$app->user->role_id == 2) ): ?>
       <li>
         <a href="/parcels" aria-expanded="false">
           <i class="icon icon-app-store"></i>
@@ -30,7 +30,7 @@ use app\core\Application;
 
       <?php endif; ?>
 
-      <?php if(Application::$app->user->role_id == 1): ?>
+      <?php if( !empty(Application::$app->user) && (Application::$app->user->role_id == 1) ): ?>
       <li>
         <a href="/delivery_users" aria-expanded="false">
           <i class="icon icon-app-store"></i>
