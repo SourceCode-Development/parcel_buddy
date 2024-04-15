@@ -10,6 +10,11 @@ $this->title = 'Parcels';
         margin-bottom: 10px;
     }
 
+    .custom-flex-no-margin{
+      display: flex;
+      justify-content: flex-end;
+    }
+
     .center-flex{
       display: flex;
       justify-content: center;
@@ -17,7 +22,7 @@ $this->title = 'Parcels';
     }
 
     .custom-flex a{
-      margin-right: 60px;
+      margin-right: 15px;
     }
 </style>
 
@@ -31,9 +36,11 @@ $this->title = 'Parcels';
 </div>
 <?php endif; ?>
 
+<?php if(!empty($all_parcels)): ?>
 <div id="map" class="custom-flex" style="height:300px">
     
 </div>
+<?php endif; ?>
 
 <table class="table">
   <thead>
@@ -44,7 +51,7 @@ $this->title = 'Parcels';
       <th scope="col">Coordinates</th>
       <th scope="col">Assigned To</th>
       <th scope="col">Status</th>
-      <th scope="col">Action</th>
+      <th scope="col" class="custom-flex-no-margin">Action</th>
     </tr>
   </thead>
   <tbody>
@@ -62,10 +69,10 @@ $this->title = 'Parcels';
       echo "<td>" . $parcel['name'] .  "</td>";
       echo "<td>" . $parcel['status_title'] .  "</td>";
       if($is_admin){
-        echo '<td><div class="dropdown show">  <a class="btn btn-primary dropdown-toggle" href="#" role="button" id="dropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Action</a>  <div class="dropdown-menu" aria-labelledby="dropdownMenuLink"> <a class="dropdown-item" href="/edit_parcel/' . $parcel['id'] . '">Update</a> <a class="dropdown-item" href="#">Cancel</a> </div> </div></td>';
+        echo '<td class="custom-flex-no-margin"><div class="dropdown show">  <a class="btn btn-primary dropdown-toggle" href="#" role="button" id="dropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Action</a>  <div class="dropdown-menu" aria-labelledby="dropdownMenuLink"> <a class="dropdown-item" href="/edit_parcel/' . $parcel['id'] . '">Update</a> <a class="dropdown-item" href="#">Cancel</a> </div> </div></td>';
       }
       else{
-        echo '<td><div class="dropdown show">  <a class="btn btn-primary dropdown-toggle" href="#" role="button" id="dropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Action</a>  <div class="dropdown-menu" aria-labelledby="dropdownMenuLink"> <a class="dropdown-item" href="/change-status/' . $parcel['id'] . '">Change status</a> </div> </div></td>';
+        echo '<td class="custom-flex-no-margin"><div class="dropdown show">  <a class="btn btn-primary dropdown-toggle" href="#" role="button" id="dropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Action</a>  <div class="dropdown-menu" aria-labelledby="dropdownMenuLink"> <a class="dropdown-item" href="/change-status/' . $parcel['id'] . '">Change status</a> </div> </div></td>';
       }
       echo '</tr>';
       $count++;
@@ -76,12 +83,19 @@ $this->title = 'Parcels';
   </tbody>
 </table>
 
+<div class="custom-flex pagination-div">
+    <span class="pagination-text-span">
+      Showing <?php echo \count($all_parcels); ?> of <?php echo $total_num_of_parcels; ?> results
+  </span>
+</div>
 
+<?php if(!empty($all_parcels)): ?>
 <div class="center-flex">
     <button class="btn btn-primary btn-lg w-20" onClick="open_paginated()">
       Load More
     </button>
 </div>
+<?php endif; ?>
 
 <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCElxolerfeQGbl4wigcDTEEZeg9H6skMI&libraries=places&callback=initMap" async defer></script>
 
@@ -111,6 +125,10 @@ $this->title = 'Parcels';
       }
 
       if(google == undefined){
+        return;
+      }
+
+      if(all_parcels.length < 1){
         return;
       }
 
@@ -167,26 +185,34 @@ async function open_paginated(){
   let url = location.origin + '/parcels-paginated/' + page_count;
 
   let url_obj = new URL(url);
-  //url_obj.searchParams.set('page', page_count);
-
-  let options = {};
 
   button.setAttribute('disabled', '');
   button.textContent = 'Loading...';
 
-  let promise = await fetch(url_obj.href, options);
+  let promise = await fetch(url_obj.href, {});
   let response = await promise.json();
+
+  if(response.all_parcels == undefined || response.all_parcels.length < 1 ){
+    button.textContent = 'No more records..';
+    setTimeout(() => {
+      button.parentElement.removeChild(button);
+    }, 1000);
+
+    return;
+  }
 
   button.removeAttribute('disabled');
   button.textContent = 'Load More';
 
-  if(response.all_parcels == undefined || response.all_parcels.length < 1 ){
-    button.parentElement.removeChild(button);
-  }
-
   render_rows(response.all_parcels);
 
   all_parcels.push(... response.all_parcels);
+
+  let total_rows = response.total_num_of_parcels;
+  let visible_rows = all_parcels.length;
+
+  document.querySelector('.pagination-text-span').textContent = `Showing ${visible_rows} of ${total_rows} results`;
+
   initMap({'latitude': center_lat, 'longitude': center_long});
 }
 
@@ -232,11 +258,11 @@ function render_rows(data){
       template = template + "<td>" + row['status_title'] +  "</td>";
       
       if(is_admin){
-        template = template + '<td><div class="dropdown show">  <a class="btn btn-primary dropdown-toggle" href="#" role="button" id="dropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Action</a>  <div class="dropdown-menu" aria-labelledby="dropdownMenuLink"> <a class="dropdown-item" href="/edit_parcel/' + row['id'] + '">Update</a> <a class="dropdown-item" href="#">Cancel</a> </div> </div></td>';
+        template = template + '<td class="custom-flex-no-margin"><div class="dropdown show">  <a class="btn btn-primary dropdown-toggle" href="#" role="button" id="dropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Action</a>  <div class="dropdown-menu" aria-labelledby="dropdownMenuLink"> <a class="dropdown-item" href="/edit_parcel/' + row['id'] + '">Update</a> <a class="dropdown-item" href="#">Cancel</a> </div> </div></td>';
       }
 
       else{
-        template = template + '<td><div class="dropdown show">  <a class="btn btn-primary dropdown-toggle" href="#" role="button" id="dropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Action</a>  <div class="dropdown-menu" aria-labelledby="dropdownMenuLink"> <a class="dropdown-item" href="/change-status/' + row['id'] + '">Change Status</a> </div> </div></td>';
+        template = template + '<td class="custom-flex-no-margin"><div class="dropdown show">  <a class="btn btn-primary dropdown-toggle" href="#" role="button" id="dropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Action</a>  <div class="dropdown-menu" aria-labelledby="dropdownMenuLink"> <a class="dropdown-item" href="/change-status/' + row['id'] + '">Change Status</a> </div> </div></td>';
       }
 
       template = template + '</tr>';

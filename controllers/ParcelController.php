@@ -11,6 +11,7 @@ use app\core\Response;
 use app\models\LoginForm;
 use app\models\{User, Parcel};
 use app\core\exception\NotFoundException;
+use SimpleSoftwareIO\QrCode\Generator;
 use ErrorException;
 
 class ParcelController extends Controller
@@ -43,16 +44,20 @@ class ParcelController extends Controller
         $is_admin = false;
         $title = 'Parcels';
         if(Application::$app->user->role_id == 1){
+            $total_num_of_parcels = Parcel::get_parcel_count();
+            
             $all_parcels = Parcel::get_parcels();
             $is_admin = true;
         }
 
         else{
             $user_id = Application::$app->user->id;
+
+            $total_num_of_parcels = Parcel::get_parcel_count_for_user($user_id);
             $all_parcels = Parcel::get_parcel_for_user($user_id);
         }
 
-        $send_data = \compact('all_parcels', 'is_admin', 'title');
+        $send_data = \compact('all_parcels', 'is_admin', 'title', 'total_num_of_parcels');
         $this->setLayout('auth');
         return $this->render('parcels', $send_data);
     }
@@ -74,15 +79,19 @@ class ParcelController extends Controller
         $is_admin = false;
         if(Application::$app->user->role_id == 1){
             $all_parcels = Parcel::get_parcels(self::PARCEL_DISPLAY_LIMIT, $offset);
+            $total_num_of_parcels = Parcel::get_parcel_count();
+
             $is_admin = true;
         }
 
         else{
             $user_id = Application::$app->user->id;
+
+            $total_num_of_parcels = Parcel::get_parcel_count_for_user($user_id);
             $all_parcels = Parcel::get_parcel_for_user($user_id, self::PARCEL_DISPLAY_LIMIT, $offset);
         }
 
-        $send_data = \compact('all_parcels');
+        $send_data = \compact('all_parcels', 'total_num_of_parcels');
         return \json_encode($send_data);
     }
 
@@ -123,9 +132,26 @@ class ParcelController extends Controller
     public function create_parcel(Request $request){
         try{
             $create_parcel = new Parcel();
+
             if ($request->getMethod() === 'post') {
                 $create_parcel->loadData($request->getBody());
                 if ($create_parcel->validate() && $create_parcel->save()) {
+
+                    // $qrCodePath = '/public/assets/qr_codes/' . $create_parcel->id . '.png';
+
+                    // Check if the directory exists, if not, create it
+                    // $directory = dirname($qrCodePath);
+                    // if (!file_exists($directory)) {
+                    //     mkdir($directory, 0777, true); // Recursive directory creation
+                    // }
+
+                    // $qrcode = new Generator();
+
+                    // $qrcode->size(500)
+                    //     ->margin(2)
+                    //     ->format('png')
+                    //     ->generate($create_parcel->id,$qrCodePath);
+
                     Application::$app->session->setFlash('success', 'Parcel Created Successfully');
                     Application::$app->response->redirect('/parcels');
                     return 'Show success page';

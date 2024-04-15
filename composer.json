@@ -15,6 +15,7 @@
         ]
     },
     "require": {
-        "vlucas/phpdotenv": "^5.0"
+        "vlucas/phpdotenv": "^5.0",
+        "simplesoftwareio/simple-qrcode": "^4.2"
     }
 }

@@ -64,6 +64,19 @@ class Parcel extends DbModel
         ];
     }
 
+    public static function get_parcel_count(){
+        $statement = Application::$app->db->prepare("SELECT count(p.id) as parcel_count FROM parcels p inner join users u on p.assigned_to = u.id ");
+
+        $statement->execute();
+
+        $result = $statement->fetchAll(\PDO::FETCH_ASSOC);
+        if(empty($result)){
+            return 0;
+        }
+
+        return $result[0]['parcel_count'];
+    }
+
     public static function get_parcels($limit = 5, $offset = 0){
         $statement = Application::$app->db->prepare("SELECT p.id, p.recipient_name, p.delivery_address, p.latitude, p.longitude,p.postcode,ps.status_title , u.name FROM parcels p inner join users u on p.assigned_to = u.id inner join parcel_status ps on p.status = ps.status_id limit :lim offset :offs ");
         $statement->bindValue(':lim', $limit, \PDO::PARAM_INT);
@@ -72,6 +85,20 @@ class Parcel extends DbModel
         $statement->execute();
 
         return $statement->fetchAll(\PDO::FETCH_ASSOC);
+    }
+
+    public static function get_parcel_count_for_user($user_id){
+        $statement = Application::$app->db->prepare("SELECT count(p.id) as parcel_count FROM parcels p inner join users u on p.assigned_to = u.id where u.id = :user_id group by u.id ");
+        $statement->bindValue(':user_id', $user_id);
+
+        $statement->execute();
+
+        $result = $statement->fetchAll(\PDO::FETCH_ASSOC);
+        if(empty($result)){
+            return 0;
+        }
+
+        return $result[0]['parcel_count'];
     }
 
     public static function get_parcel_for_user($user_id, $limit = 5, $offset = 0){
@@ -87,7 +114,12 @@ class Parcel extends DbModel
 
     public function save()
     {
-        return parent::save();
+        if(!parent::save()){
+            return false;
+        }
+
+        $this->id = Application::$app->db->pdo->lastInsertId();
+        return true;
     }
 
     public function update(){
