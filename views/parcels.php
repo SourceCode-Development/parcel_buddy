@@ -56,11 +56,8 @@ $this->title = 'Parcels';
   </thead>
   <tbody>
     <?php if(!empty($all_parcels)): ?>
-    <?php $count = 0; ?>
     <?php foreach($all_parcels as $parcel){
-      if($count >= 5){
-        break;
-      }
+
       echo '<tr class="custom-row" onClick="focusOnMarker()">';
       echo "<td>" . $parcel['id'] .  "</td>";
       echo "<td>" . $parcel['recipient_name'] .  "</td>";
@@ -75,7 +72,6 @@ $this->title = 'Parcels';
         echo '<td class="custom-flex-no-margin"><div class="dropdown show">  <a class="btn btn-primary dropdown-toggle" href="#" role="button" id="dropdownMenuLink" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">Action</a>  <div class="dropdown-menu" aria-labelledby="dropdownMenuLink"> <a class="dropdown-item" href="/change-status/' . $parcel['id'] . '">Change status</a> </div> </div></td>';
       }
       echo '</tr>';
-      $count++;
     }
     ?>
 

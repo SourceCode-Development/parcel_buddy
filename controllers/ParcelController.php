@@ -16,7 +16,7 @@ use ErrorException;
 
 class ParcelController extends Controller
 {
-    public const PARCEL_DISPLAY_LIMIT = 5;
+    public const PARCEL_DISPLAY_LIMIT = 10;
 
     public function __construct()
     {
@@ -57,7 +57,8 @@ class ParcelController extends Controller
             $all_parcels = Parcel::get_parcel_for_user($user_id);
         }
 
-        $send_data = \compact('all_parcels', 'is_admin', 'title', 'total_num_of_parcels');
+        $initial_limit = self::PARCEL_DISPLAY_LIMIT;
+        $send_data = \compact('all_parcels', 'is_admin', 'title', 'total_num_of_parcels', 'initial_limit');
         $this->setLayout('auth');
         return $this->render('parcels', $send_data);
     }

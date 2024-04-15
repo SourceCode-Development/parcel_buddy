@@ -77,7 +77,7 @@ class Parcel extends DbModel
         return $result[0]['parcel_count'];
     }
 
-    public static function get_parcels($limit = 5, $offset = 0){
+    public static function get_parcels($limit = 10, $offset = 0){
         $statement = Application::$app->db->prepare("SELECT p.id, p.recipient_name, p.delivery_address, p.latitude, p.longitude,p.postcode,ps.status_title , u.name FROM parcels p inner join users u on p.assigned_to = u.id inner join parcel_status ps on p.status = ps.status_id limit :lim offset :offs ");
         $statement->bindValue(':lim', $limit, \PDO::PARAM_INT);
         $statement->bindValue(':offs', $offset, \PDO::PARAM_INT);
@@ -101,7 +101,7 @@ class Parcel extends DbModel
         return $result[0]['parcel_count'];
     }
 
-    public static function get_parcel_for_user($user_id, $limit = 5, $offset = 0){
+    public static function get_parcel_for_user($user_id, $limit = 10, $offset = 0){
         $statement = Application::$app->db->prepare("SELECT p.id, p.recipient_name, p.delivery_address, p.latitude, p.longitude,p.postcode,ps.status_title , u.name FROM parcels p inner join users u on p.assigned_to = u.id inner join parcel_status ps on p.status = ps.status_id where u.id = :user_id limit :lim offset :offs ");
         $statement->bindValue(':user_id', $user_id);
         $statement->bindValue(':lim', $limit, \PDO::PARAM_INT);
