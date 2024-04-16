@@ -107,18 +107,32 @@ $this->title = 'Parcels';
   let page_count = 1;
   let all_parcels = <?php echo \json_encode($all_parcels); ?>;
   const is_admin = <?php echo \json_encode($is_admin); ?>;
-  let center_lat;
-  let center_long;
+
+  //default coordinates are central London, UK
+  let center_lat = 51.497;
+  let center_long = -0.131;
   let map;
   let centering_delay_flag = true;
 
-  window.addEventListener('load', function(){
-    navigator.geolocation.getCurrentPosition((position) => {
-      center_lat = position.coords.latitude;
-      center_long = position.coords.longitude;
+  function location_permission_allowed(position){
+    center_lat = position.coords.latitude;
+    center_long = position.coords.longitude;
 
+    initMap({'latitude': center_lat, 'longitude': center_long});
+  }
+
+  function location_permission_rejected(error){
+    console.warn(error.code);
+    initMap({'latitude': center_lat, 'longitude': center_long});
+  }
+
+  window.addEventListener('load', function(){
+    if(navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(location_permission_allowed, location_permission_rejected);
+    }
+    else{
       initMap({'latitude': center_lat, 'longitude': center_long});
-    });
+    }
   });
 
   async function initMap(initial_coordinates) {
@@ -159,7 +173,11 @@ $this->title = 'Parcels';
           glyph: `${i + 1}`,
         });
 
-        let title_dynamic = `${all_parcels[i]['recipient_name']}` + `{${all_parcels[i]['latitude']}, ${all_parcels[i]['longitude']}}`;
+        let title_dynamic = `
+        Address - ${all_parcels[i]['delivery_address']} ,
+        Name - ${all_parcels[i]['recipient_name']} ,
+        Coordinates - {${all_parcels[i]['latitude']}, ${all_parcels[i]['longitude']}}`
+        ;
 
         const marker = new AdvancedMarkerElement({
           position: {'lat': all_parcels[i]['latitude'], 'lng': all_parcels[i]['longitude']},
