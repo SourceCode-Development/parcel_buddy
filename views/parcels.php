@@ -24,6 +24,11 @@ $this->title = 'Parcels';
     .custom-flex a{
       margin-right: 15px;
     }
+
+    .img-styling{
+      width: 50px !important;
+      height: 50px !important;
+    }
 </style>
 
 <h1>Parcels</h1>
@@ -45,7 +50,7 @@ $this->title = 'Parcels';
 <table class="table">
   <thead>
     <tr>
-      <th scope="col">ID</th>
+      <th scope="col">QR Code</th>
       <th scope="col">Recipient</th>
       <th scope="col">Address</th>
       <th scope="col">Coordinates</th>
@@ -59,7 +64,7 @@ $this->title = 'Parcels';
     <?php foreach($all_parcels as $parcel){
 
       echo '<tr class="custom-row" onClick="focusOnMarker()">';
-      echo "<td>" . $parcel['id'] .  "</td>";
+      echo "<td><a href='" . $parcel['qr_code'] . "' target='_blank' ><img class='img-styling' src='" . $parcel['qr_code'] . "'></a></td>";
       echo "<td>" . $parcel['recipient_name'] .  "</td>";
       echo "<td>" . $parcel['delivery_address'] .  "</td>";
       echo "<td class='coordinates-cell'>" . '{' . $parcel['latitude'] . ' ,' . $parcel['longitude'] . '}' . "</td>";
@@ -93,7 +98,10 @@ $this->title = 'Parcels';
 </div>
 <?php endif; ?>
 
-<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCElxolerfeQGbl4wigcDTEEZeg9H6skMI&libraries=places&callback=initMap" async defer></script>
+<script src='
+<?php 
+  echo "https://maps.googleapis.com/maps/api/js?key=" . $_ENV['GOOGLE_MAPS_API_KEY'] . "&libraries=places&callback=initMap";
+?>' async defer></script>
 
 <script>
   let page_count = 1;
@@ -246,7 +254,7 @@ function render_rows(data){
 
   for(let row of data){
       template = template + '<tr class="custom-row" onClick="focusOnMarker()">';
-      template = template + "<td>" + row['id'] +  "</td>";
+      template = template + "<td><a href='" + row['qr_code'] +  "' target='_blank' ><img class='img-styling' src='" + row['qr_code'] +  "'></a></td>";
       template = template + "<td>" + row['recipient_name'] +  "</td>";
       template = template + "<td>" + row['delivery_address'] +  "</td>";
       template = template + "<td class='coordinates-cell'>" +'{' + row['latitude'] + ' ,' + row['longitude'] + '}' + "</td>";
